@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; worker-src blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'">
+<title>Key / Deterministic password generator</title>
+<style>
+:root{color-scheme:dark;--bg:#101112;--panel:#171819;--line:#343638;--muted:#a2a5a8;--text:#f1f2f2;--accent:#d5f3a2}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100dvh;display:flex;flex-direction:column}main{width:min(100% - 40px,440px);margin:auto;padding:52px 0 42px}header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:0 0 17px;margin-bottom:44px}.brand{font-size:17px;font-weight:700;letter-spacing:-.5px}.tag{color:var(--muted);font:10px ui-monospace,SFMono-Regular,monospace;letter-spacing:.09em;text-transform:uppercase}.dot{display:inline-block;width:7px;height:7px;background:var(--accent);border-radius:50%;margin-right:7px}h1{font-size:clamp(31px,8vw,42px);line-height:1.08;letter-spacing:-.055em;margin:0 0 12px;font-weight:620}p{color:var(--muted);margin:0;font-size:14px}.intro{margin-bottom:32px}.field{margin:0 0 20px}label{display:block;font-size:12px;font-weight:600;margin:0 0 8px}.inputrow{display:flex;border:1px solid var(--line);border-radius:8px;background:var(--panel);align-items:center;overflow:hidden}.inputrow:focus-within{outline:1px solid var(--accent);border-color:var(--accent)}input{font:16px ui-monospace,SFMono-Regular,Consolas,monospace;min-width:0;flex:1;width:100%;border:0;outline:none;background:transparent;color:var(--text);padding:14px 12px;line-height:1.4}input::placeholder{color:#85898d}button{font:inherit;cursor:pointer;border:0;color:var(--text);touch-action:manipulation}button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}button:disabled{cursor:not-allowed;opacity:.48}.small{background:none;padding:12px 13px;font-size:12px;color:var(--muted);flex-shrink:0}.small:hover{color:var(--text)}.hint{font-size:11px;margin-top:6px;color:var(--muted)}.primary{width:100%;background:var(--accent);color:#16200b;font-weight:700;min-height:50px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 17px;margin-top:8px}.primary:hover:not(:disabled){background:#e1ffc1}.result{border-top:1px solid var(--line);margin-top:29px;padding-top:21px}.result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.result-header label{margin:0}.actions{display:flex;gap:10px;margin-top:10px}.secondary{background:var(--panel);border:1px solid var(--line);border-radius:7px;flex:1;padding:10px;font-size:12px}.secondary:hover:not(:disabled){border-color:var(--muted)}.status{min-height:22px;margin-top:10px;font-size:12px;color:var(--muted)}.status.error{color:#f5a7a7}.meta{margin-top:28px;border-top:1px solid var(--line);padding-top:15px;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font:10px ui-monospace,SFMono-Regular,monospace;line-height:1.6}details{margin-top:19px;color:var(--muted);font-size:12px}summary{cursor:pointer}details p{font-size:12px;margin-top:10px}a{color:var(--muted)}[hidden]{display:none!important}@media(max-width:360px){main{width:calc(100% - 28px);padding:28px 0}header{margin-bottom:32px}.meta{flex-wrap:wrap}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body><main>
+<header><div class="brand">KEY<span style="color:var(--accent)">.</span></div><div class="tag"><span class="dot"></span>Local computation</div></header>
+<h1>One secret.<br>Unique passwords.</h1><p class="intro">Generate the same password for the same service. No account, no database, no network requests.</p>
+<div class="field"><label for="phrase">Master phrase</label><div class="inputrow"><input id="phrase" type="password" placeholder="Enter your secret phrase" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true"><button class="small" id="phraseShow" type="button" aria-controls="phrase" aria-pressed="false">Show</button></div><p class="hint">Use a long, unique phrase. Spaces and case matter.</p></div>
+<div class="field"><label for="service">Service domain</label><div class="inputrow"><input id="service" type="text" placeholder="example.com" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="url"></div><p class="hint">Domain only, no https://, paths or trailing slash.</p></div>
+<button type="button" class="primary" id="generate"><span id="generateLabel">Generate password</span><span aria-hidden="true">↗</span></button>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+<section class="result" id="result" hidden><div class="result-header"><label for="password">Generated password</label><span class="tag">24 CHARACTERS</span></div><div class="inputrow"><input id="password" type="password" readonly autocomplete="off" spellcheck="false" aria-label="Generated password"><button class="small" id="passwordShow" type="button" aria-pressed="false">Show</button></div><div class="actions"><button class="secondary" id="copy" type="button">Copy password</button><button class="secondary" id="clear" type="button">Clear</button></div><p class="hint">Cleared from this page after 60 seconds. Clipboard contents may remain.</p></section>
+<div class="meta"><span>SCRYPT / V1<br>N=131072 · r=8 · p=1</span><span style="text-align:right">XPORT / DPG<br>24 CHAR OUTPUT</span></div>
+<details><summary>Privacy &amp; compatibility</summary><p>The master phrase is used in a temporary worker and removed from the input when generation begins. No storage, tracking, external scripts or requests. This does not guarantee erasure from browser memory, keyboard software or the system clipboard.</p><p>Compatible with the original Python generator: UTF-8, lowercased domain, scrypt with a 15-byte derived key, Base64url and the suffix aA1!. Requires approximately 128 MiB of memory and Web Crypto. Keep a trusted offline copy for sensitive use. This browser implementation has not received an independent security audit.</p></details>
+</main>
+<script id="worker" type="text/plain">
+'use strict';
+const N=131072,R=8;
+function rot(a,b){return (a<<b)|(a>>>(32-b));}
+function salsa(x,z){
+ z.set(x);
+ for(let i=0;i<8;i+=2){
+ z[4]^=rot(z[0]+z[12],7);z[8]^=rot(z[4]+z[0],9);z[12]^=rot(z[8]+z[4],13);z[0]^=rot(z[12]+z[8],18);
+ z[9]^=rot(z[5]+z[1],7);z[13]^=rot(z[9]+z[5],9);z[1]^=rot(z[13]+z[9],13);z[5]^=rot(z[1]+z[13],18);
+ z[14]^=rot(z[10]+z[6],7);z[2]^=rot(z[14]+z[10],9);z[6]^=rot(z[2]+z[14],13);z[10]^=rot(z[6]+z[2],18);
+ z[3]^=rot(z[15]+z[11],7);z[7]^=rot(z[3]+z[15],9);z[11]^=rot(z[7]+z[3],13);z[15]^=rot(z[11]+z[7],18);
+ z[1]^=rot(z[0]+z[3],7);z[2]^=rot(z[1]+z[0],9);z[3]^=rot(z[2]+z[1],13);z[0]^=rot(z[3]+z[2],18);
+ z[6]^=rot(z[5]+z[4],7);z[7]^=rot(z[6]+z[5],9);z[4]^=rot(z[7]+z[6],13);z[5]^=rot(z[4]+z[7],18);
+ z[11]^=rot(z[10]+z[9],7);z[8]^=rot(z[11]+z[10],9);z[9]^=rot(z[8]+z[11],13);z[10]^=rot(z[9]+z[8],18);
+ z[12]^=rot(z[15]+z[14],7);z[13]^=rot(z[12]+z[15],9);z[14]^=rot(z[13]+z[12],13);z[15]^=rot(z[14]+z[13],18);
+ }
+ for(let i=0;i<16;i++)x[i]=(x[i]+z[i])>>>0;
+}
+function mix(b,y,x,z){
+ x.set(b.subarray(240,256));
+ for(let i=0;i<16;i++){
+ for(let k=0;k<16;k++)x[k]^=b[i*16+k];
+ salsa(x,z);y.set(x,((i>>>1)+(i&1)*8)*16);
+ }b.set(y);
+}
+async function derive(phrase,site){
+ if(!self.crypto?.subtle)throw Error('Web Crypto is unavailable. Use a trusted HTTPS page or compatible offline browser.');
+ let pass=new TextEncoder().encode(phrase),salt=new TextEncoder().encode(site),key,raw,b,v,y,x,z,out,bs;
+ try{
+ key=await crypto.subtle.importKey('raw',pass,'PBKDF2',false,['deriveBits']);pass.fill(0);
+ const pb=async(s,len)=>new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:s,iterations:1},key,len*8));
+ raw=await pb(salt,128*R);b=new Uint32Array(256);const dv=new DataView(raw.buffer);for(let i=0;i<256;i++)b[i]=dv.getUint32(i*4,true);raw.fill(0);
+ v=new Uint32Array(N*256);y=new Uint32Array(256);x=new Uint32Array(16);z=new Uint32Array(16);
+ for(let i=0;i<N;i++){v.set(b,i*256);mix(b,y,x,z);}
+ for(let i=0;i<N;i++){const j=(b[240]&(N-1))*256;for(let k=0;k<256;k++)b[k]^=v[j+k];mix(b,y,x,z);}
+ bs=new Uint8Array(1024);const view=new DataView(bs.buffer);for(let i=0;i<256;i++)view.setUint32(i*4,b[i],true);
+ out=await pb(bs,15);return btoa(String.fromCharCode(...out)).replace(/\+/g,'-').replace(/\//g,'_')+'aA1!';
+ }finally{for(const a of [pass,salt,raw,b,v,y,x,z,bs,out])if(a)a.fill(0);}
+}
+self.onmessage=async e=>{try{const result=await derive(e.data.phrase,e.data.site);self.postMessage({result});}catch(err){self.postMessage({error:err instanceof RangeError?'Not enough memory for scrypt on this device.':String(err.message||err)});}finally{self.close();}};
+</script>
+<script>
+'use strict';
+const $=id=>document.getElementById(id),phrase=$('phrase'),service=$('service'),password=$('password'),result=$('result'),gen=$('generate'),status=$('status');let worker=null,timeout=null,blobURL=null;
+function message(s,err=false){status.textContent=s;status.classList.toggle('error',err);}
+function toggle(input,button,force){const show=force===undefined?input.type==='password':force;input.type=show?'text':'password';button.textContent=show?'Hide':'Show';button.setAttribute('aria-pressed',String(show));}
+function clearResult(){clearTimeout(timeout);timeout=null;password.value='';toggle(password,$('passwordShow'),false);result.hidden=true;}
+function stop(){if(worker){worker.terminate();worker=null;}if(blobURL){URL.revokeObjectURL(blobURL);blobURL=null;}gen.disabled=false;$('generateLabel').textContent='Generate password';phrase.disabled=false;service.disabled=false;}
+function clearAll(){stop();clearResult();phrase.value='';service.value='';toggle(phrase,$('phraseShow'),false);message('');}
+$('phraseShow').onclick=()=>toggle(phrase,$('phraseShow'));$('passwordShow').onclick=()=>toggle(password,$('passwordShow'));$('clear').onclick=()=>{clearAll();phrase.focus();};
+$('copy').onclick=async()=>{if(!password.value)return;try{await navigator.clipboard.writeText(password.value);message('Copied. Your system clipboard may retain the password.');}catch{toggle(password,$('passwordShow'),true);password.focus();password.select();message('Clipboard access unavailable. Copy the selected password manually.');}};
+function validDomain(s){return s.length<=253&&s.split('.').every(label=>/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label));}
+function run(){if(worker)return;clearResult();const site=service.value.trim().toLowerCase();if(!phrase.value){message('Enter your master phrase.',true);phrase.focus();return;}if(!validDomain(site)){message('Enter a valid ASCII domain (use Punycode for international domains).',true);service.focus();return;}
+ if(!window.Worker||!window.isSecureContext||!window.crypto?.subtle){message('This browser context does not support secure local computation. Open the file in a compatible browser or use HTTPS.',true);return;}
+ service.value=site;gen.disabled=true;phrase.disabled=true;service.disabled=true;$('generateLabel').textContent='Deriving…';message('Computing locally. No network requests.');
+ try{blobURL=URL.createObjectURL(new Blob([$ ('worker').textContent],{type:'text/javascript'}));worker=new Worker(blobURL);worker.onmessage=e=>{stop();if(e.data.error){message(e.data.error,true);return;}password.value=e.data.result;result.hidden=false;message('Password ready.');timeout=setTimeout(()=>{clearResult();message('Password cleared from this page.');},60000);};worker.onerror=()=>{stop();message('Local calculation failed. The browser may have insufficient memory.',true);};worker.postMessage({phrase:phrase.value,site});phrase.value='';toggle(phrase,$('phraseShow'),false);}catch{stop();message('Unable to start the local worker.',true);}}
+gen.onclick=run;[phrase,service].forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();run();}}));window.addEventListener('pagehide',clearAll);window.addEventListener('pageshow',e=>{if(e.persisted)clearAll();});
+</script></body></html>
